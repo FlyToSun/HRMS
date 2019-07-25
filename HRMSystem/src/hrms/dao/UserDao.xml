@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+  "-//mybatis.org//DTD mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hrms.dao.UserDao">
+  <!-- 实体对象与表列名映射 -->
+   <resultMap type="hrms.entity.User" id="rs">
+        <id property="user_id" column="user_id" />
+        <result property="user_name" column="user_name" />
+        
+   </resultMap>
+   <sql id="columns">user_name,password,role_id,status,emp_id</sql>
+   <sql id="selectColumns">
+   			user_id,<include refid="columns" />
+   </sql>
+    <!-- 使用if元素实现组合查询 -->
+	<select id="findUserByNameAndStatus" parameterType="user"
+	     resultType="user">
+	     select *  from users
+	     <where>
+	     	<!-- 判断用户名是否为空 -->
+	     	<if test="user_name !=null and user_name!=''" >
+	     		and user_name like concat('%',#{user_name},'%')
+	     	</if>
+	     	<!-- 判断角色是否为空 -->
+	     	<if test="role_id gt 0 and role_id lte 2" >
+	     		and role_id = #{role_id}
+	     	</if>
+	     	<!-- 判断状态 -->
+	     	<if test="status !=null and status!=''">
+	     		and status = #{status}
+	     	</if>
+	     	</where>
+	 </select>
+	<!-- 新增用户操作 -->
+	<insert id="insertUser" parameterType="user" 
+			keyProperty="user_id" useGeneratedKeys="true">
+		insert into users ( <include refid="columns" /> ) 
+				values(#{user_name},#{password},#{role_id},#{status},#{emp_id})
+	</insert>
+	<!-- 删除功能，使用foreach元素实现批量删除用户的功能  -->
+	     <delete id="delUser"  parameterType="int" >
+	     	delete from users where 
+	     	  user_id in
+	     	  <foreach item="id" index="index" collection="array"
+	     	      open="(" close=")" separator=",">
+	     	     #{id}
+	     	   </foreach>
+	     </delete>
+	     
+	 <!-- 用户信息修改操作 -->
+	     <update id="updateUser" parameterType="user" >
+	     	update users 
+	     	<set>
+	     		<if test="user_name !=null and user_name!=''">
+	     			user_name=#{user_name},
+	     		</if>
+	     		<if test="role_id gt 0  and role_id lte 2">
+	     			role_id=#{role_id},
+	     		</if>   
+	     	</set>
+	     	where user_id=#{user_id}
+	     </update>
+</mapper>

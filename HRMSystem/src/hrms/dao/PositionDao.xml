@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+  "-//mybatis.org//DTD mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hrms.dao.PositionDao">
+  <!-- 实体对象与表列名映射 -->
+   <resultMap type="hrms.entity.Position" id="rs">
+        <id property="post_id" column="post_id" />
+        <result property="post_name" column="post_name" />
+        
+   </resultMap>
+   <sql id="columns">post_no,post_name,post_desc,dept_id,limit_no</sql>
+   <sql id="selectColumns">
+   			post_id,<include refid="columns" />
+   </sql>
+   
+   <!-- 查询操作 -->
+	<select id="findPosiByName" parameterType="String"
+		resultMap="rs">
+		select <include refid="selectColumns" /> from positions where post_name like #{post_name}
+	</select>
+	<!-- 新增用户操作 -->
+	<insert id="insertPosition" parameterType="position" 
+			keyProperty="post_id" useGeneratedKeys="true">
+		insert into positions ( <include refid="columns" /> ) 
+				values(#{post_no},#{post_name},#{post_desc},#{dept_id},#{limit_no})
+	</insert>
+	<!-- 删除功能，使用foreach元素实现批量删除用户的功能  -->
+	     <delete id="delPosition"  parameterType="int" >
+	     	delete from positions where 
+	     	  post_id in
+	     	  <foreach item="id" index="index" collection="array"
+	     	      open="(" close=")" separator=",">
+	     	     #{id}
+	     	   </foreach>
+	     </delete>
+</mapper>
